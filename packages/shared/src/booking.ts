@@ -34,6 +34,8 @@ export interface CreateBookingRequest {
 }
 
 export interface BookingPropertySummary {
+  lng: null;
+  lat: null;
   id: string;
   title: string;
   city: string;

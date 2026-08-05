@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TripsMap } from "@/components/trips/trips-map";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { ApiError } from "@/lib/api/http";
 import { cancelBooking, listBookings } from "@/lib/api/bookings";
@@ -73,16 +74,19 @@ export default function TripsPage() {
         )}
 
         {bookingsQuery.data && bookingsQuery.data.data.length > 0 && (
-          <ul className="space-y-4">
-            {bookingsQuery.data.data.map((booking) => (
-              <TripCard
-                key={booking.id}
-                booking={booking}
-                onCancel={() => cancelMutation.mutate(booking.id)}
-                cancelling={cancelMutation.isPending && cancelMutation.variables === booking.id}
-              />
-            ))}
-          </ul>
+          <div className="space-y-6">
+            <TripsMap bookings={bookingsQuery.data.data} />
+            <ul className="space-y-4">
+              {bookingsQuery.data.data.map((booking) => (
+                <TripCard
+                  key={booking.id}
+                  booking={booking}
+                  onCancel={() => cancelMutation.mutate(booking.id)}
+                  cancelling={cancelMutation.isPending && cancelMutation.variables === booking.id}
+                />
+              ))}
+            </ul>
+          </div>
         )}
       </div>
     </div>

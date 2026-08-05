@@ -10,22 +10,22 @@ const TABS = [
   {
     href: "/",
     label: "All",
-    icon: "/globe.jpeg",
+    icon: "/globe.png",
   },
   {
     href: "/",
     label: "Homes",
-    icon: "/house.jpeg",
+    icon: "/house.png",
   },
   {
     href: "/experiences",
     label: "Experiences",
-    icon: "/ballon.jpeg",
+    icon: "/ballon.png",
   },
   {
     href: "/services",
     label: "Services",
-    icon: "/bell.jpeg",
+    icon: "/bell.png",
   },
 ];
 
@@ -42,7 +42,7 @@ export function CategoryTabs({
   return (
     <nav
       aria-label="Primary"
-      className="flex items-end justify-center gap-12 py-5"
+      className="flex items-end justify-center gap-10 pt-6 pb-8 md:gap-14"
     >
       {TABS.map(({ href, label, icon }, index) => {
         const active = index === activeIndex;
@@ -53,26 +53,27 @@ export function CategoryTabs({
             href={href}
             className={cn(
               "group relative flex flex-col items-center",
-              "pt-1 pb-4 px-2",
-              "transition-all duration-200",
+              "px-2 pt-1",
+              "transition-colors duration-200",
               active ? "text-[#222222]" : "text-[#6A6A6A] hover:text-[#222222]",
             )}
           >
-            <Image
-              src={icon}
-              alt=""
-              width={34}
-              height={34}
-              priority
-              className="mb-3 h-8.5 w-8.5 object-contain transition-transform duration-200 group-hover:scale-105"
-            />
+            <span className="mb-0.5 block h-10 w-10 overflow-hidden">
+              <Image
+                src={icon}
+                alt=""
+                width={36}
+                height={36}
+                priority
+                className={cn(
+                  "h-10 w-10 border-0 object-contain outline-none transition-transform duration-200",
+                  "group-hover:scale-110",
+                  !active && "opacity-70 group-hover:opacity-100",
+                )}
+              />
+            </span>
 
-            <span
-              className={cn(
-                "text-sm font-medium whitespace-nowrap",
-                active && "font-semibold",
-              )}
-            >
+            <span className="whitespace-nowrap text-sm font-semibold mb-1">
               {label}
             </span>
 
@@ -88,7 +89,7 @@ export function CategoryTabs({
                         damping: 35,
                       }
                 }
-                className="absolute bottom-0 left-0 right-0 mx-auto h-0.5 w-full rounded-full bg-[#222222]"
+                className="absolute bottom-0 left-0 right-0 mx-auto h-0.5 w-full rounded-full bg-[#222222] mb-0.5"
               />
             )}
           </Link>

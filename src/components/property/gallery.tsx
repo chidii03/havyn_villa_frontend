@@ -113,6 +113,7 @@ function Lightbox({
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape") onClose();
     if (event.key === "ArrowLeft") go(-1);
     if (event.key === "ArrowRight") go(1);
   }
@@ -129,7 +130,7 @@ function Lightbox({
   }
 
   return (
-    <Dialog open onOpenChange={(open: any) => !open && onClose()}>
+    <Dialog open onOpenChange={(open: unknown) => !open && onClose()}>
       <DialogContent
         className="flex h-screen max-h-none w-screen max-w-none flex-col gap-0 rounded-none bg-black p-0 sm:max-w-none"
         onKeyDown={onKeyDown}
@@ -137,6 +138,14 @@ function Lightbox({
         <DialogTitle className="sr-only">
           {title} — photo {index + 1} of {photos.length}
         </DialogTitle>
+        <button
+          type="button"
+          aria-label="Close photo viewer"
+          onClick={onClose}
+          className="absolute right-4 top-4 z-20 flex size-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-md transition-colors hover:bg-white/25"
+        >
+          <Icon name="close" size={18} />
+        </button>
 
         <div
           className="relative flex flex-1 items-center justify-center overflow-hidden"

@@ -26,12 +26,12 @@ export function GoogleSignInButton() {
   const { loginWithGoogle } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [scriptReady, setScriptReady] = useState(false);
+  const [gsiReady, setGsiReady] = useState(false);
   const initialized = useRef(false);
   const buttonRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!scriptReady || !GOOGLE_CLIENT_ID || initialized.current || !window.google) return;
+    if (!gsiReady || !GOOGLE_CLIENT_ID || initialized.current || !window.google?.accounts?.id) return;
 
     window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
@@ -63,7 +63,24 @@ export function GoogleSignInButton() {
       });
     }
     initialized.current = true;
-  }, [loginWithGoogle, scriptReady]);
+  }, [loginWithGoogle, gsiReady]);
+
+  const markGsiReady = () => {
+    if (window.google?.accounts?.id) {
+      setGsiReady(true);
+      return;
+    }
+
+    const startedAt = Date.now();
+    const intervalId = window.setInterval(() => {
+      if (window.google?.accounts?.id) {
+        window.clearInterval(intervalId);
+        setGsiReady(true);
+      } else if (Date.now() - startedAt > 5000) {
+        window.clearInterval(intervalId);
+      }
+    }, 50);
+  };
 
   return (
     <div className="space-y-3">
@@ -77,19 +94,15 @@ export function GoogleSignInButton() {
           Add NEXT_PUBLIC_GOOGLE_CLIENT_ID and GOOGLE_CLIENT_ID to enable Google sign-in.
         </p>
       )}
-      {GOOGLE_CLIENT_ID && !scriptReady && <div className="h-12 w-full animate-pulse rounded-full bg-muted" aria-hidden="true" />}
-      <div
-        ref={buttonRef}
-        className="min-h-12 w-full overflow-hidden rounded-full [&_iframe]:block"
-        aria-busy={loading || !scriptReady}
-        hidden={!GOOGLE_CLIENT_ID || !scriptReady}
-      />
+      {GOOGLE_CLIENT_ID && gsiReady && (
+        <div ref={buttonRef} className="min-h-12 w-full overflow-hidden rounded-full [&_iframe]:block" aria-busy={loading} />
+      )}
       {error && (
         <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}
-      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" onLoad={() => setScriptReady(true)} />
+      <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" onLoad={markGsiReady} />
     </div>
   );
 }

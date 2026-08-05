@@ -27,7 +27,7 @@ export function MapView({
 }) {
   // Read at render time, not module scope — keeps this swappable in tests via
   // vi.stubEnv without needing vi.resetModules()/a dynamic re-import.
-  const GOOGLE_MAPS_BROWSER_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY;
+  const GOOGLE_MAPS_BROWSER_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY;
   const GOOGLE_MAPS_MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID;
 
   const located = pins.filter((pin): pin is MapPin & { lat: number; lng: number } => pin.lat != null && pin.lng != null);
