@@ -1,2 +1,0 @@
-[0805/090212.795:ERROR:net\base\network_change_notifier_win.cc:213] WSALookupServiceBegin failed with: -1
-[0805/090324.715:ERROR:net\base\network_change_notifier_win.cc:213] WSALookupServiceBegin failed with: -1
