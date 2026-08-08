@@ -22,7 +22,7 @@ export function TripsMap({ bookings }: { bookings: BookingDetail[] }) {
 
   if (!mapboxToken) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center rounded-xl border border-line bg-white p-6">
+      <div className="flex min-h-105 items-center justify-center rounded-xl border border-line bg-white p-6">
         <EmptyState icon="mapView" title="Mapbox token needed" description="Add NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to show booked stays on a map." />
       </div>
     );
@@ -104,12 +104,12 @@ function TripsMapCanvas({ bookings, accessToken }: { bookings: BookingDetail[]; 
   ];
 
   if (mappedBookings.length === 0 && bookingsNeedingGeocode.length > 0) {
-    return <Skeleton className="h-[460px] w-full rounded-xl" />;
+    return <Skeleton className="h-115 w-full rounded-xl" />;
   }
 
   if (mappedBookings.length === 0) {
     return (
-      <div className="flex min-h-[420px] items-center justify-center rounded-xl border border-line bg-white p-6">
+      <div className="flex min-h-105 items-center justify-center rounded-xl border border-line bg-white p-6">
         <EmptyState icon="mapView" title="No trip locations yet" description="Your booked properties don't have coordinates or a usable city/state yet." />
       </div>
     );
@@ -191,7 +191,7 @@ function MapboxTripsMap({ accessToken, mappedBookings }: { accessToken: string; 
   }, [mappedBookings]);
 
   return (
-    <div className="relative h-[460px] overflow-hidden rounded-xl border border-line bg-white">
+    <div className="relative h-115 overflow-hidden rounded-xl border border-line bg-white">
       <div ref={containerRef} className="h-full w-full" />
       <div className="absolute left-3 top-3 z-10 flex overflow-hidden rounded-lg border border-line bg-white shadow-sm">
         <button

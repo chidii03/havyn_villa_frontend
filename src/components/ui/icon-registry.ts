@@ -1,4 +1,5 @@
 import {
+  ArrowUp,
   ArrowsOut,
   Barbell,
   Bathtub,
@@ -78,6 +79,7 @@ import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
  * its optional global styling, which Server Components can't use at all.
  */
 export const ICON_REGISTRY = {
+  arrowUp: ArrowUp,
   search: MagnifyingGlass,
   heart: Heart,
   heartFilled: Heart, // same glyph — pass weight="fill" via <Icon> for the filled look

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { SearchResultItem } from "@havyn/shared";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
@@ -11,9 +11,26 @@ import { ResultsGrid } from "./results-grid";
 export function SearchResultsView({ properties }: { properties: SearchResultItem[] }) {
   const [view, setView] = useState<"list" | "map">("list");
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [visibleMapIds, setVisibleMapIds] = useState<Set<string> | null>(null);
+
+  const visibleProperties = useMemo(() => {
+    if (!visibleMapIds) return properties;
+    return properties.filter((property) => visibleMapIds.has(property.id));
+  }, [properties, visibleMapIds]);
 
   return (
     <div>
+      {visibleMapIds && (
+        <div className="mb-4 flex items-center justify-between gap-3 rounded-lg border border-line bg-surface px-4 py-3 text-sm">
+          <span className="font-medium text-ink">
+            {visibleProperties.length} {visibleProperties.length === 1 ? "stay" : "stays"} in this map area
+          </span>
+          <button type="button" className="font-semibold text-brand" onClick={() => setVisibleMapIds(null)}>
+            Show all
+          </button>
+        </div>
+      )}
+
       <div className="mb-4 flex justify-end lg:hidden">
         <div className="inline-flex rounded-full border border-line p-1" role="group" aria-label="Results view">
           <ToggleButton active={view === "list"} icon="listView" label="List" onClick={() => setView("list")} />
@@ -23,10 +40,10 @@ export function SearchResultsView({ properties }: { properties: SearchResultItem
 
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
         <div className={cn(view === "map" && "hidden lg:block")}>
-          <ResultsGrid properties={properties} hoveredId={hoveredId} onHoverChange={setHoveredId} />
+          <ResultsGrid properties={visibleProperties} hoveredId={hoveredId} onHoverChange={setHoveredId} />
         </div>
         <div className={cn("lg:sticky lg:top-20 lg:h-[calc(100vh-7rem)]", view === "list" ? "hidden lg:block" : "h-[60vh]")}>
-          <MapView pins={properties} hoveredId={hoveredId} onHoverChange={setHoveredId} />
+          <MapView pins={properties} hoveredId={hoveredId} onHoverChange={setHoveredId} onVisiblePinsChange={setVisibleMapIds} />
         </div>
       </div>
     </div>

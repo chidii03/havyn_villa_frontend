@@ -47,6 +47,7 @@ export interface BookingPropertySummary {
 /** Mirrors booking/web/BookingDetail.java. */
 export interface BookingDetail {
   id: string;
+  referenceId: string | null;
   property: BookingPropertySummary;
   checkIn: string;
   checkOut: string;

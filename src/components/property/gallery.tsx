@@ -132,6 +132,7 @@ function Lightbox({
   return (
     <Dialog open onOpenChange={(open: unknown) => !open && onClose()}>
       <DialogContent
+        showCloseButton={false}
         className="flex h-screen max-h-none w-screen max-w-none flex-col gap-0 rounded-none bg-black p-0 sm:max-w-none"
         onKeyDown={onKeyDown}
       >

@@ -112,6 +112,7 @@ function TripCard({ booking, onCancel, cancelling }: { booking: BookingDetail; o
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-medium text-ink">{booking.property.title}</p>
+          {booking.referenceId && <p className="mt-1 text-xs font-medium uppercase text-ink-muted">{booking.referenceId}</p>}
           <p className="text-sm text-ink-muted">
             {booking.property.city && booking.property.state ? `${booking.property.city}, ${booking.property.state}` : ""}
           </p>

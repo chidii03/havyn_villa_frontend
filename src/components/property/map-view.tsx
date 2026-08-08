@@ -25,10 +25,12 @@ export function MapView({
   pins,
   hoveredId,
   onHoverChange,
+  onVisiblePinsChange,
 }: {
   pins: MapPin[];
   hoveredId?: string | null;
   onHoverChange?: (id: string | null) => void;
+  onVisiblePinsChange?: (ids: Set<string> | null) => void;
 }) {
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const located = pins.filter((pin): pin is MapPin & { lat: number; lng: number } => pin.lat != null && pin.lng != null);
@@ -53,6 +55,7 @@ export function MapView({
       pins={located}
       hoveredId={hoveredId}
       onHoverChange={onHoverChange}
+      onVisiblePinsChange={onVisiblePinsChange}
     />
   );
 }
@@ -62,15 +65,20 @@ function MapboxPropertyMap({
   pins,
   hoveredId,
   onHoverChange,
+  onVisiblePinsChange,
 }: {
   accessToken: string;
   pins: Array<MapPin & { lat: number; lng: number }>;
   hoveredId?: string | null;
   onHoverChange?: (id: string | null) => void;
+  onVisiblePinsChange?: (ids: Set<string> | null) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
+  const markerElementsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const appliedStyleRef = useRef(MAPBOX_STREETS);
+  const suppressNextMoveRef = useRef(false);
   const [style, setStyle] = useState(MAPBOX_STREETS);
 
   const center = useMemo<[number, number]>(() => {
@@ -98,14 +106,18 @@ function MapboxPropertyMap({
     return () => {
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current.clear();
+      markerElementsRef.current.clear();
+      if (mapRef.current === map) {
+        mapRef.current = null;
+      }
       map.remove();
-      mapRef.current = null;
     };
-  }, [accessToken, center, style]);
+  }, [accessToken, center]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
+    if (!map || appliedStyleRef.current === style) return;
+    appliedStyleRef.current = style;
     map.setStyle(style);
   }, [style]);
 
@@ -113,38 +125,95 @@ function MapboxPropertyMap({
     const map = mapRef.current;
     if (!map) return;
 
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current.clear();
+    let cancelled = false;
 
-    const bounds = new mapboxgl.LngLatBounds();
-    pins.forEach((pin) => {
-      const element = document.createElement("button");
-      element.type = "button";
-      element.className = markerClass(hoveredId === pin.id);
-      element.textContent = formatPrice(pin.basePrice, pin.currency);
-      element.setAttribute("aria-label", `${pin.title}, ${formatPrice(pin.basePrice, pin.currency)} per night`);
-      element.addEventListener("mouseenter", () => onHoverChange?.(pin.id));
-      element.addEventListener("mouseleave", () => onHoverChange?.(null));
+    const syncMarkers = () => {
+      if (cancelled || !mapRef.current) return;
 
-      const marker = new mapboxgl.Marker({ element, anchor: "bottom" })
-        .setLngLat([pin.lng, pin.lat])
-        .setPopup(
-          new mapboxgl.Popup({ offset: 18 }).setHTML(
-            `<strong>${escapeHtml(pin.title)}</strong><br/><span>${escapeHtml([pin.city, pin.state].filter(Boolean).join(", "))}</span>`,
-          ),
-        )
-        .addTo(map);
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current.clear();
+      markerElementsRef.current.clear();
 
-      markersRef.current.set(pin.id, marker);
-      bounds.extend([pin.lng, pin.lat]);
-    });
+      const bounds = new mapboxgl.LngLatBounds();
+      pins.forEach((pin) => {
+        const element = document.createElement("button");
+        element.type = "button";
+        element.className = markerClass(false);
+        element.textContent = formatPrice(pin.basePrice, pin.currency);
+        element.setAttribute("aria-label", `${pin.title}, ${formatPrice(pin.basePrice, pin.currency)} per night`);
+        element.addEventListener("mouseenter", () => onHoverChange?.(pin.id));
+        element.addEventListener("mouseleave", () => onHoverChange?.(null));
 
-    if (pins.length === 1) {
-      map.flyTo({ center: [pins[0].lng, pins[0].lat], zoom: 12, essential: true });
+        const marker = new mapboxgl.Marker({ element, anchor: "bottom" })
+          .setLngLat([pin.lng, pin.lat])
+          .setPopup(
+            new mapboxgl.Popup({ offset: 18 }).setHTML(
+              `<strong>${escapeHtml(pin.title)}</strong><br/><span>${escapeHtml([pin.city, pin.state].filter(Boolean).join(", "))}</span>`,
+            ),
+          )
+          .addTo(map);
+
+        markersRef.current.set(pin.id, marker);
+        markerElementsRef.current.set(pin.id, element);
+        bounds.extend([pin.lng, pin.lat]);
+      });
+
+      if (pins.length === 1) {
+        suppressNextMoveRef.current = true;
+        map.flyTo({ center: [pins[0].lng, pins[0].lat], zoom: 12, essential: true });
+      } else {
+        suppressNextMoveRef.current = true;
+        map.fitBounds(bounds, { padding: 64, maxZoom: 13, duration: 500 });
+      }
+    };
+
+    if (map.loaded()) {
+      syncMarkers();
     } else {
-      map.fitBounds(bounds, { padding: 64, maxZoom: 13, duration: 500 });
+      map.once("load", syncMarkers);
+      map.once("style.load", syncMarkers);
     }
-  }, [hoveredId, onHoverChange, pins]);
+
+    return () => {
+      cancelled = true;
+      map.off("load", syncMarkers);
+      map.off("style.load", syncMarkers);
+    };
+  }, [onHoverChange, pins]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !onVisiblePinsChange) return;
+    const currentMap = map;
+    const notifyVisiblePins = onVisiblePinsChange;
+
+    function updateVisiblePins() {
+      if (suppressNextMoveRef.current) {
+        suppressNextMoveRef.current = false;
+        return;
+      }
+
+      const bounds = currentMap.getBounds();
+      if (!bounds) return;
+      const visibleIds = new Set(
+        pins.filter((pin) => bounds.contains([pin.lng, pin.lat])).map((pin) => pin.id),
+      );
+      notifyVisiblePins(visibleIds);
+    }
+
+    currentMap.on("dragend", updateVisiblePins);
+    currentMap.on("zoomend", updateVisiblePins);
+    return () => {
+      currentMap.off("dragend", updateVisiblePins);
+      currentMap.off("zoomend", updateVisiblePins);
+    };
+  }, [onVisiblePinsChange, pins]);
+
+  useEffect(() => {
+    markerElementsRef.current.forEach((element, id) => {
+      element.className = markerClass(hoveredId === id);
+    });
+  }, [hoveredId]);
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-xl">

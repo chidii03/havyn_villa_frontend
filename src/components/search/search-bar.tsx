@@ -14,12 +14,11 @@ import { WhoPanel } from "./who-panel";
 
 type Segment = "where" | "when" | "who" | null;
 
-/**
- * The where/when/who search pill — frontend/03-ui-and-navigation-spec.md#1.2.
- * Expanded (hero) and compact (sticky header) variants share this one component,
- * only the sizing/typography differ; both have the same three real popovers.
- */
-export function SearchBar({ variant = "expanded" }: { variant?: "expanded" | "compact" }) {
+export function SearchBar({
+  variant = "expanded",
+}: {
+  variant?: "expanded" | "compact";
+}) {
   const router = useRouter();
   const [openSegment, setOpenSegment] = useState<Segment>(null);
   const [destination, setDestination] = useState("");

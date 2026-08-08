@@ -23,7 +23,8 @@ export function Header() {
 
   useEffect(() => {
     function onScroll() {
-      setScrolled(window.scrollY > 24);
+      const nextScrolled = window.scrollY > 24;
+      setScrolled((current) => (current === nextScrolled ? current : nextScrolled));
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
