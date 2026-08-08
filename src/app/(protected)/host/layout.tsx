@@ -1,13 +1,6 @@
 import { RequireAuth } from "@/components/auth/require-auth";
 import { HostNav } from "@/components/host/host-nav";
 
-/**
- * Adds a HOST role check on top of the (protected) group's base auth guard — mirrors
- * admin/layout.tsx's pattern exactly. A signed-in non-host is bounced to
- * /become-a-host (not the generic "/" default) since that's the actual next step for
- * them, not a dead end. Shared chrome (the section nav) lives here, unlike
- * trips/admin's single-page routes, since /host is a multi-page section.
- */
 export default function HostLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireAuth

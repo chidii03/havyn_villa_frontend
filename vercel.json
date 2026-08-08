@@ -7,7 +7,6 @@
   "env": {
     "NEXT_PUBLIC_API_BASE_URL": "@next_public_api_base_url",
     "NEXT_PUBLIC_GOOGLE_CLIENT_ID": "@next_public_google_client_id",
-    "NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY": "@next_public_google_maps_browser_key",
-    "NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID": "@next_public_google_maps_map_id"
+    "NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN": "@next_public_mapbox_access_token"
   }
 }

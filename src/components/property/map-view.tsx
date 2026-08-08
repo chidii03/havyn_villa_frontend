@@ -1,6 +1,8 @@
 "use client";
 
-import { APIProvider, AdvancedMarker, Map } from "@vis.gl/react-google-maps";
+import mapboxgl from "mapbox-gl";
+import  "mapbox-gl/dist/mapbox-gl.css";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EmptyState } from "@/components/patterns/empty-state";
 import { formatPrice } from "@/lib/format/currency";
 import { cn } from "@/lib/utils";
@@ -16,6 +18,9 @@ export interface MapPin {
   basePrice: number;
 }
 
+const MAPBOX_STREETS = "mapbox://styles/mapbox/streets-v12";
+const MAPBOX_SATELLITE = "mapbox://styles/mapbox/satellite-streets-v12";
+
 export function MapView({
   pins,
   hoveredId,
@@ -25,15 +30,11 @@ export function MapView({
   hoveredId?: string | null;
   onHoverChange?: (id: string | null) => void;
 }) {
-  // Read at render time, not module scope — keeps this swappable in tests via
-  // vi.stubEnv without needing vi.resetModules()/a dynamic re-import.
-  const GOOGLE_MAPS_BROWSER_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY;
-  const GOOGLE_MAPS_MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID;
-
+  const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const located = pins.filter((pin): pin is MapPin & { lat: number; lng: number } => pin.lat != null && pin.lng != null);
 
-  if (!GOOGLE_MAPS_BROWSER_KEY) {
-    return <MapListFallback pins={pins} reason="Map view isn't configured for this environment yet" />;
+  if (!mapboxToken) {
+    return <MapListFallback pins={pins} reason="Mapbox isn't configured for this environment yet" />;
   }
 
   if (located.length === 0) {
@@ -46,60 +47,149 @@ export function MapView({
     );
   }
 
-  const center = {
-    lat: located.reduce((sum, pin) => sum + pin.lat, 0) / located.length,
-    lng: located.reduce((sum, pin) => sum + pin.lng, 0) / located.length,
-  };
-
   return (
-    <APIProvider apiKey={GOOGLE_MAPS_BROWSER_KEY}>
-      <Map
-        defaultCenter={center}
-        defaultZoom={11}
-        mapId={GOOGLE_MAPS_MAP_ID}
-        gestureHandling="greedy"
-        disableDefaultUI={false}
-        className="h-full w-full rounded-xl"
-      >
-        {located.map((pin) => (
-          <AdvancedMarker
-            key={pin.id}
-            position={{ lat: pin.lat, lng: pin.lng }}
-            onMouseEnter={() => onHoverChange?.(pin.id)}
-            onMouseLeave={() => onHoverChange?.(null)}
-          >
-            <PriceMarker price={formatPrice(pin.basePrice, pin.currency)} active={hoveredId === pin.id} />
-          </AdvancedMarker>
-        ))}
-      </Map>
-    </APIProvider>
+    <MapboxPropertyMap
+      accessToken={mapboxToken}
+      pins={located}
+      hoveredId={hoveredId}
+      onHoverChange={onHoverChange}
+    />
   );
 }
 
-function PriceMarker({ price, active }: { price: string; active: boolean }) {
+function MapboxPropertyMap({
+  accessToken,
+  pins,
+  hoveredId,
+  onHoverChange,
+}: {
+  accessToken: string;
+  pins: Array<MapPin & { lat: number; lng: number }>;
+  hoveredId?: string | null;
+  onHoverChange?: (id: string | null) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
+  const [style, setStyle] = useState(MAPBOX_STREETS);
+
+  const center = useMemo<[number, number]>(() => {
+    const lng = pins.reduce((sum, pin) => sum + pin.lng, 0) / pins.length;
+    const lat = pins.reduce((sum, pin) => sum + pin.lat, 0) / pins.length;
+    return [lng, lat];
+  }, [pins]);
+
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return;
+
+    mapboxgl.accessToken = accessToken;
+    const map = new mapboxgl.Map({
+      container: containerRef.current,
+      style,
+      center,
+      zoom: 11,
+      attributionControl: true,
+    });
+
+    map.addControl(new mapboxgl.NavigationControl(), "top-right");
+    map.addControl(new mapboxgl.FullscreenControl(), "top-right");
+    mapRef.current = map;
+
+    return () => {
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current.clear();
+      map.remove();
+      mapRef.current = null;
+    };
+  }, [accessToken, center, style]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.setStyle(style);
+  }, [style]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current.clear();
+
+    const bounds = new mapboxgl.LngLatBounds();
+    pins.forEach((pin) => {
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = markerClass(hoveredId === pin.id);
+      element.textContent = formatPrice(pin.basePrice, pin.currency);
+      element.setAttribute("aria-label", `${pin.title}, ${formatPrice(pin.basePrice, pin.currency)} per night`);
+      element.addEventListener("mouseenter", () => onHoverChange?.(pin.id));
+      element.addEventListener("mouseleave", () => onHoverChange?.(null));
+
+      const marker = new mapboxgl.Marker({ element, anchor: "bottom" })
+        .setLngLat([pin.lng, pin.lat])
+        .setPopup(
+          new mapboxgl.Popup({ offset: 18 }).setHTML(
+            `<strong>${escapeHtml(pin.title)}</strong><br/><span>${escapeHtml([pin.city, pin.state].filter(Boolean).join(", "))}</span>`,
+          ),
+        )
+        .addTo(map);
+
+      markersRef.current.set(pin.id, marker);
+      bounds.extend([pin.lng, pin.lat]);
+    });
+
+    if (pins.length === 1) {
+      map.flyTo({ center: [pins[0].lng, pins[0].lat], zoom: 12, essential: true });
+    } else {
+      map.fitBounds(bounds, { padding: 64, maxZoom: 13, duration: 500 });
+    }
+  }, [hoveredId, onHoverChange, pins]);
+
   return (
-    <div
-      className={cn(
-        "rounded-full border px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-md transition-colors",
-        active ? "border-brand bg-brand text-white" : "border-line bg-white text-ink",
-      )}
-    >
-      {price}
+    <div className="relative h-full w-full overflow-hidden rounded-xl">
+      <div ref={containerRef} className="h-full w-full" />
+      <div className="absolute left-3 top-3 z-10 flex overflow-hidden rounded-lg border border-line bg-white shadow-sm">
+        <button
+          type="button"
+          className={cn("px-3 py-2 text-xs font-medium", style === MAPBOX_STREETS ? "bg-brand text-white" : "text-ink")}
+          onClick={() => setStyle(MAPBOX_STREETS)}
+        >
+          Map
+        </button>
+        <button
+          type="button"
+          className={cn("px-3 py-2 text-xs font-medium", style === MAPBOX_SATELLITE ? "bg-brand text-white" : "text-ink")}
+          onClick={() => setStyle(MAPBOX_SATELLITE)}
+        >
+          Satellite
+        </button>
+      </div>
     </div>
   );
 }
 
-/** The a11y fallback required by prompt 20 — also what actually renders whenever no Maps key is configured. */
+function markerClass(active: boolean) {
+  return cn(
+    "rounded-full border px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-md transition-colors",
+    active ? "border-brand bg-brand text-white" : "border-line bg-white text-ink",
+  );
+}
+
+function escapeHtml(value: string) {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+
 function MapListFallback({ pins, reason }: { pins: MapPin[]; reason: string }) {
   return (
     <div className="h-full overflow-y-auto rounded-xl border border-line p-4">
-      <p className="mb-3 text-sm text-ink-muted">{reason} — here are the same results as a list.</p>
+      <p className="mb-3 text-sm text-ink-muted">{reason} - here are the same results as a list.</p>
       <ul aria-label="Property locations" className="divide-y divide-line">
         {pins.map((pin) => (
           <li key={pin.id} className="py-2.5 text-sm">
             <p className="font-medium text-ink">{pin.title}</p>
             <p className="text-ink-muted">
-              {pin.city}, {pin.state} · {formatPrice(pin.basePrice, pin.currency)}/night
+              {pin.city}, {pin.state} - {formatPrice(pin.basePrice, pin.currency)}/night
             </p>
           </li>
         ))}

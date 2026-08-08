@@ -23,7 +23,13 @@ export function WishlistHeart({ propertyId, title, className }: { propertyId: st
   const saved = Boolean(favoritesQuery.data?.data.some((favorite) => favorite.propertyId === propertyId));
 
   const toggleMutation = useMutation({
-    mutationFn: () => (saved ? removeFavorite(accessToken!, propertyId) : addFavorite(accessToken!, propertyId)),
+    mutationFn: async () => {
+      if (saved) {
+        await removeFavorite(accessToken!, propertyId);
+      } else {
+        await addFavorite(accessToken!, propertyId);
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["favorites"] });
       toast.success(saved ? "Removed from wishlist" : "Saved to wishlist");

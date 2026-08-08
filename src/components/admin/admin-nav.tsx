@@ -14,7 +14,6 @@ const LINKS = [
   { href: "/admin/audit-log", label: "Audit log" },
 ] as const;
 
-/** Shared sub-navigation across every /admin/* page — see apps/web/src/app/(protected)/admin/layout.tsx. */
 export function AdminNav() {
   const pathname = usePathname();
 

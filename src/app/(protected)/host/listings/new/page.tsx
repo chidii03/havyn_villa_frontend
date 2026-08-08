@@ -18,12 +18,6 @@ import { listAmenities, listPropertyTypes } from "@/lib/api/properties";
 import { ApiError } from "@/lib/api/http";
 import { useAuth } from "@/lib/auth/auth-provider";
 
-/**
- * A single sectioned form, not a multi-step wizard — see backend/02-domain-modules.md's
- * session 18 notes for why: this project has no existing Stepper primitive, and this
- * prompt's acceptance criteria is "host can manage listings," not a bespoke onboarding
- * wizard experience. All 19 CreatePropertyRequest fields are covered.
- */
 export default function NewListingPage() {
   const { accessToken } = useAuth();
   const router = useRouter();
@@ -80,7 +74,7 @@ export default function NewListingPage() {
           name="typeCode"
           control={control}
           render={({ field }) => (
-            <Select value={field.value || undefined} onValueChange={field.onChange}>
+            <Select value={field.value ?? ""} onValueChange={field.onChange}>
               <SelectTrigger id="listing-type" className="w-full">
                 <SelectValue placeholder="Choose a type" />
               </SelectTrigger>

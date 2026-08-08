@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/lib/auth/auth-provider";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LinkButton } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
 
 /**
  * The authoritative client-side auth guard — see require-session-cookie.ts for why
@@ -51,7 +52,7 @@ export function RequireAuth({
     return (
       <section className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-6 py-16 text-center">
         <div className="rounded-full bg-brand/10 p-4 text-brand" aria-hidden="true">
-          <span className="block size-3 rounded-full bg-brand" />
+          <Icon name="shieldCheck" size={32} weight="duotone" />
         </div>
         <h1 className="mt-6 font-display text-3xl font-semibold text-ink">{roleDeniedTitle}</h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-ink-muted">{roleDeniedDescription}</p>
