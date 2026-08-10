@@ -6,22 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { formatPrice } from "@/lib/format/currency";
 
-/**
- * Below `lg`, BookingWidget's sidebar isn't sticky (grid collapses to one column) —
- * without this, price/Reserve sit below gallery/host/amenities/map/policy, several
- * screens down. prompt 22's "no layout that hides critical price/CTA on mobile"
- * requirement — a persistent bottom bar keeps both one tap away at all times.
- */
 export function MobileBookingBar({
   propertyId,
   capacity,
   currency,
   basePrice,
+  propertyTitle: _propertyTitle,
+  location: _location,
 }: {
   propertyId: string;
   capacity: number;
   currency: string;
   basePrice: number;
+  propertyTitle?: string;
+  location?: string;
 }) {
   const [open, setOpen] = useState(false);
 

@@ -48,6 +48,11 @@ export default function HostListingsPage() {
       queryClient.invalidateQueries({ queryKey: ["host", "dashboard-summary"] });
     },
     onError: (error) => {
+      if (error instanceof ApiError && error.code === "INVALID_STATUS_TRANSITION") {
+        toast.info("That listing status was already changing. Refreshing it now.");
+        queryClient.invalidateQueries({ queryKey: ["host", "listings"] });
+        return;
+      }
       toast.error(error instanceof ApiError ? error.message : "That didn't work. Please try again.");
     },
   });
@@ -122,6 +127,10 @@ function ListingRow({
       </p>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
+        <LinkButton href={`/host/listings/${listing.id}`} variant="outline" size="sm" className="min-h-11">
+          <Icon name="pencil" size={14} />
+          Edit / media
+        </LinkButton>
         <LinkButton href={`/host/listings/${listing.id}/calendar`} variant="outline" size="sm" className="min-h-11">
           <Icon name="calendar" size={14} />
           Calendar

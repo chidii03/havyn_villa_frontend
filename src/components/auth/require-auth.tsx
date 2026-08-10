@@ -7,12 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LinkButton } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 
-/**
- * The authoritative client-side auth guard — see require-session-cookie.ts for why
- * this can't be done purely on the server. Renders nothing (well, a loading skeleton)
- * until AuthProvider's silent refresh resolves, then either renders children or
- * redirects.
- */
 export function RequireAuth({
   children,
   redirectTo = "/login",
@@ -23,7 +17,6 @@ export function RequireAuth({
 }: {
   children: React.ReactNode;
   redirectTo?: string;
-  /** If set, also requires this role (e.g. "ADMIN") on top of being authenticated. */
   role?: string;
   roleDeniedTitle?: string;
   roleDeniedDescription?: string;

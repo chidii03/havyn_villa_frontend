@@ -10,7 +10,7 @@ import { ErrorState } from "@/components/patterns/error-state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listAdminProperties, rejectProperty, suspendProperty } from "@/lib/api/admin";
+import { listAdminProperties, reactivateProperty, rejectProperty, suspendProperty } from "@/lib/api/admin";
 import { ApiError } from "@/lib/api/http";
 import { formatPrice } from "@/lib/format/currency";
 import { useAuth } from "@/lib/auth/auth-provider";
@@ -44,6 +44,15 @@ export default function AdminPropertiesPage() {
     onError: (error) => toast.error(error instanceof ApiError ? error.message : "That didn't work. Please try again."),
   });
 
+  const reactivateMutation = useMutation({
+    mutationFn: (propertyId: string) => reactivateProperty(accessToken!, propertyId),
+    onSuccess: () => {
+      toast.success("Listing is live");
+      queryClient.invalidateQueries({ queryKey: ["admin", "properties"] });
+    },
+    onError: (error) => toast.error(error instanceof ApiError ? error.message : "That didn't work. Please try again."),
+  });
+
   return (
     <div className="flex flex-col gap-6">
       {propertiesQuery.isLoading && (
@@ -65,7 +74,13 @@ export default function AdminPropertiesPage() {
       {propertiesQuery.data && propertiesQuery.data.data.length > 0 && (
         <ul className="space-y-3">
           {propertiesQuery.data.data.map((property) => (
-            <PropertyRow key={property.id} property={property} onAction={(action) => setDialog({ propertyId: property.id, action })} />
+            <PropertyRow
+              key={property.id}
+              property={property}
+              pending={reactivateMutation.isPending && reactivateMutation.variables === property.id}
+              onAction={(action) => setDialog({ propertyId: property.id, action })}
+              onReactivate={() => reactivateMutation.mutate(property.id)}
+            />
           ))}
         </ul>
       )}
@@ -87,7 +102,17 @@ export default function AdminPropertiesPage() {
   );
 }
 
-function PropertyRow({ property, onAction }: { property: PropertySummary; onAction: (action: "suspend" | "reject") => void }) {
+function PropertyRow({
+  property,
+  pending,
+  onAction,
+  onReactivate,
+}: {
+  property: PropertySummary;
+  pending: boolean;
+  onAction: (action: "suspend" | "reject") => void;
+  onReactivate: () => void;
+}) {
   const status = STATUS_LABELS[property.status] ?? { label: property.status, variant: "outline" as const };
 
   return (
@@ -99,7 +124,23 @@ function PropertyRow({ property, onAction }: { property: PropertySummary; onActi
             {property.city}, {property.state}
           </p>
         </div>
-        <Badge variant={status.variant}>{status.label}</Badge>
+        {property.status === "SUSPENDED" ? (
+          <button
+            type="button"
+            className="rounded-2xl"
+            aria-label="Switch listing to live"
+            onClick={onReactivate}
+            disabled={pending}
+          >
+            <Badge variant="outline" className="rounded-2xl">
+              {pending ? "Switching..." : "Live"}
+            </Badge>
+          </button>
+        ) : (
+          <Badge variant={status.variant} className="rounded-2xl">
+            {status.label}
+          </Badge>
+        )}
       </div>
 
       <p className="mt-2 text-sm text-ink">
@@ -109,13 +150,36 @@ function PropertyRow({ property, onAction }: { property: PropertySummary; onActi
 
       <div className="mt-3 flex flex-wrap gap-2">
         {property.status === "ACTIVE" && (
-          <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => onAction("suspend")}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 min-h-9 rounded-2xl px-4"
+            onClick={() => onAction("suspend")}
+          >
             Suspend
           </Button>
         )}
         {property.status === "PENDING" && (
-          <Button type="button" variant="outline" size="sm" className="min-h-11" onClick={() => onAction("reject")}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-9 min-h-9 rounded-2xl px-4"
+            onClick={() => onAction("reject")}
+          >
             Reject
+          </Button>
+        )}
+        {property.status === "SUSPENDED" && (
+          <Button
+            type="button"
+            size="sm"
+            className="h-9 min-h-9 rounded-2xl px-4"
+            onClick={onReactivate}
+            disabled={pending}
+          >
+            {pending ? "Switching..." : "Live"}
           </Button>
         )}
       </div>

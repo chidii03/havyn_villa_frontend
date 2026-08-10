@@ -19,6 +19,7 @@
       }
     ],
     "paths": {
+      "@havyn/shared": ["../../packages/shared/src/index.ts"],
       "@/*": ["./src/*"]
     }
   },

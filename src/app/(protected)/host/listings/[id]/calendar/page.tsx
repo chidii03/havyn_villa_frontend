@@ -18,8 +18,6 @@ import { ApiError } from "@/lib/api/http";
 import { useAuth } from "@/lib/auth/auth-provider";
 
 const RANGE_DAYS = 90;
-
-/** Calendar UI for blocking dates and setting per-date price overrides — project-docs/prompts/17-host-dashboard.md. */
 export default function ListingCalendarPage() {
   const { id } = useParams<{ id: string }>();
   const { accessToken } = useAuth();
@@ -79,10 +77,18 @@ export default function ListingCalendarPage() {
   );
 
   if (listingQuery.isError || availabilityQuery.isError) {
+    const loadError = listingQuery.error ?? availabilityQuery.error;
+    const description =
+      loadError instanceof ApiError
+        ? loadError.message
+        : listingQuery.isError
+          ? "Couldn't load this listing. Please try again in a moment."
+          : "Couldn't load availability. Please try again in a moment.";
+
     return (
       <ErrorState
         title="Couldn't load the calendar"
-        description="Please try again in a moment."
+        description={description}
         onRetry={() => {
           listingQuery.refetch();
           availabilityQuery.refetch();

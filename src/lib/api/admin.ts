@@ -2,11 +2,13 @@ import type {
   AdminAnalyticsSummary,
   AdminUserSummary,
   AuditLogSummary,
+  BookingEmailLogPage,
   DisputeSummary,
   PageResponse,
   PlatformSettingSummary,
   PropertyDetail,
   PropertySummary,
+  SupportTicketSummary,
   VerificationRequestSummary,
 } from "@havyn/shared";
 import { apiFetch } from "./http";
@@ -45,6 +47,10 @@ export function listAdminProperties(accessToken: string, page = 0, size = 20) {
 
 export function suspendProperty(accessToken: string, propertyId: string, reason: string) {
   return apiFetch<PropertyDetail>(`/api/v1/admin/properties/${propertyId}/suspend`, { method: "POST", accessToken, body: { reason } });
+}
+
+export function reactivateProperty(accessToken: string, propertyId: string) {
+  return apiFetch<PropertyDetail>(`/api/v1/admin/properties/${propertyId}/reactivate`, { method: "POST", accessToken });
 }
 
 export function rejectProperty(accessToken: string, propertyId: string, reason: string) {
@@ -105,4 +111,18 @@ export function getAnalyticsSummary(accessToken: string) {
 
 export function listAuditLog(accessToken: string, page = 0, size = 20) {
   return apiFetch<PageResponse<AuditLogSummary>>(`/api/v1/admin/audit-log?page=${page}&size=${size}`, { accessToken });
+}
+
+export function listBookingEmailLogs(accessToken: string, status = "", search = "", page = 0, size = 20) {
+  const params = new URLSearchParams({ page: String(page), size: String(size) });
+  if (status) params.set("status", status);
+  if (search) params.set("search", search);
+  return apiFetch<BookingEmailLogPage>(`/api/v1/admin/emails?${params}`, { accessToken });
+}
+
+export function listSupportTickets(accessToken: string, status = "", search = "", page = 0, size = 20) {
+  const params = new URLSearchParams({ page: String(page), size: String(size) });
+  if (status) params.set("status", status);
+  if (search) params.set("search", search);
+  return apiFetch<PageResponse<SupportTicketSummary>>(`/api/v1/admin/support-tickets?${params}`, { accessToken });
 }

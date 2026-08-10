@@ -2,13 +2,17 @@ import type {
   AuthResponse,
   AvailabilityDay,
   AvailabilityDayInput,
+  AddMediaRequest,
   CreatePropertyRequest,
   HostDashboardSummary,
   HostReservationSummary,
+  MediaSignatureResponse,
   PageResponse,
   PayoutSummary,
   PropertyDetail,
+  PropertyMediaSummary,
   PropertySummary,
+  UpdateMediaRequest,
   UpdatePropertyRequest,
 } from "@havyn/shared";
 import { apiFetch } from "./http";
@@ -37,6 +41,10 @@ export function updateHostListing(accessToken: string, id: string, request: Upda
   return apiFetch<PropertyDetail>(`/api/v1/host/listings/${id}`, { method: "PATCH", accessToken, body: request });
 }
 
+export function deleteDraftListing(accessToken: string, id: string) {
+  return apiFetch<void>(`/api/v1/host/listings/${id}`, { method: "DELETE", accessToken });
+}
+
 export function submitListing(accessToken: string, id: string) {
   return apiFetch<PropertyDetail>(`/api/v1/host/listings/${id}/submit`, { method: "POST", accessToken });
 }
@@ -62,6 +70,38 @@ export function setAvailability(accessToken: string, id: string, days: Availabil
     method: "PUT",
     accessToken,
     body: { days },
+  });
+}
+
+export function createMediaSignature(accessToken: string, propertyId: string) {
+  return apiFetch<MediaSignatureResponse>(`/api/v1/host/listings/${propertyId}/media/signature`, { method: "POST", accessToken });
+}
+
+export function listListingMedia(accessToken: string, propertyId: string) {
+  return apiFetch<PropertyMediaSummary[]>(`/api/v1/host/listings/${propertyId}/media`, { accessToken });
+}
+
+export function addListingMedia(accessToken: string, propertyId: string, request: AddMediaRequest) {
+  return apiFetch<PropertyMediaSummary>(`/api/v1/host/listings/${propertyId}/media`, { method: "POST", accessToken, body: request });
+}
+
+export function deleteListingMedia(accessToken: string, propertyId: string, mediaId: string) {
+  return apiFetch<void>(`/api/v1/host/listings/${propertyId}/media/${mediaId}`, { method: "DELETE", accessToken });
+}
+
+export function updateListingMedia(accessToken: string, propertyId: string, mediaId: string, request: UpdateMediaRequest) {
+  return apiFetch<PropertyMediaSummary>(`/api/v1/host/listings/${propertyId}/media/${mediaId}`, {
+    method: "PATCH",
+    accessToken,
+    body: request,
+  });
+}
+
+export function reorderListingMedia(accessToken: string, propertyId: string, orderedMediaIds: string[]) {
+  return apiFetch<PropertyMediaSummary[]>(`/api/v1/host/listings/${propertyId}/media/order`, {
+    method: "PUT",
+    accessToken,
+    body: { orderedMediaIds },
   });
 }
 

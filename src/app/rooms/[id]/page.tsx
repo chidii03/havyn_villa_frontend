@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { BookingWidget } from "@/components/booking/booking-widget";
 import { MobileBookingBar } from "@/components/booking/mobile-booking-bar";
+import { WhatsAppButton } from "@/components/booking/whatsapp-button";
 import { AmenitiesGrid } from "@/components/property/amenities-grid";
 import { Gallery } from "@/components/property/gallery";
 import { HostCard } from "@/components/property/host-card";
@@ -11,7 +12,11 @@ import { Icon } from "@/components/ui/icon";
 import { ApiError } from "@/lib/api/http";
 import { getProperty } from "@/lib/api/properties";
 
-export default async function RoomDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function RoomDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
 
   const property = await getProperty(id).catch((error: unknown) => {
@@ -21,14 +26,21 @@ export default async function RoomDetailPage({ params }: { params: Promise<{ id:
     throw error;
   });
 
+  const location = `${property.city}, ${property.state}`;
+
   return (
     <div className="mx-auto w-full max-w-5xl px-6 py-8">
-      <Gallery photos={property.photoUrls.map((url) => ({ url, alt: property.title }))} title={property.title} />
+      <Gallery
+        photos={property.photoUrls.map((url) => ({ url, alt: property.title }))}
+        title={property.title}
+      />
 
       <div className="mt-6 grid gap-8 pb-24 lg:grid-cols-[1fr_340px] lg:pb-0">
         <div className="space-y-8">
           <div>
-            <h1 className="font-display text-2xl font-semibold text-ink">{property.title}</h1>
+            <h1 className="font-display text-2xl font-semibold text-ink">
+              {property.title}
+            </h1>
             <p className="mt-1 flex items-center gap-1.5 text-ink-muted">
               <Icon name="mapPin" size={15} />
               {property.city}, {property.state}, {property.country}
@@ -48,17 +60,26 @@ export default async function RoomDetailPage({ params }: { params: Promise<{ id:
             </p>
           </div>
 
-          <ReviewsSection ratingAvg={property.ratingAvg} ratingCount={property.ratingCount} />
+          <ReviewsSection
+            ratingAvg={property.ratingAvg}
+            ratingCount={property.ratingCount}
+          />
 
           <HostCard hostId={property.hostId} />
 
           <div>
-            <h2 className="font-display text-lg font-semibold text-ink">About this place</h2>
-            <p className="mt-2 text-sm whitespace-pre-line text-ink-muted">{property.description}</p>
+            <h2 className="font-display text-lg font-semibold text-ink">
+              About this place
+            </h2>
+            <p className="mt-2 text-sm whitespace-pre-line text-ink-muted">
+              {property.description}
+            </p>
           </div>
 
           <div>
-            <h2 className="font-display text-lg font-semibold text-ink">What this place offers</h2>
+            <h2 className="font-display text-lg font-semibold text-ink">
+              What this place offers
+            </h2>
             <div className="mt-3">
               <AmenitiesGrid amenities={property.amenities} />
             </div>
@@ -66,9 +87,12 @@ export default async function RoomDetailPage({ params }: { params: Promise<{ id:
 
           {property.lat != null && property.lng != null && (
             <div>
-              <h2 className="font-display text-lg font-semibold text-ink">Where you&apos;ll be</h2>
+              <h2 className="font-display text-lg font-semibold text-ink">
+                Where you&apos;ll be
+              </h2>
               <p className="mt-1 text-sm text-ink-muted">
-                Approximate area shown — the exact location is shared after booking.
+                Approximate area shown — the exact location is shared after
+                booking.
               </p>
               <div className="mt-3 h-72">
                 <MapView
@@ -89,7 +113,17 @@ export default async function RoomDetailPage({ params }: { params: Promise<{ id:
             </div>
           )}
 
-          <PolicyBlock houseRules={property.houseRules} cancellationPolicy={property.cancellationPolicy} />
+          <PolicyBlock
+            houseRules={property.houseRules}
+            cancellationPolicy={property.cancellationPolicy}
+          />
+
+          <div className="lg:hidden">
+            <WhatsAppButton
+              propertyTitle={property.title}
+              location={location}
+            />
+          </div>
         </div>
 
         <div className="hidden lg:sticky lg:top-20 lg:block lg:self-start">
@@ -99,6 +133,7 @@ export default async function RoomDetailPage({ params }: { params: Promise<{ id:
             currency={property.currency}
             basePrice={property.basePrice}
           />
+          <WhatsAppButton propertyTitle={property.title} location={location} />
         </div>
       </div>
 
@@ -107,6 +142,8 @@ export default async function RoomDetailPage({ params }: { params: Promise<{ id:
         capacity={property.capacity}
         currency={property.currency}
         basePrice={property.basePrice}
+        propertyTitle={property.title}
+        location={location}
       />
     </div>
   );

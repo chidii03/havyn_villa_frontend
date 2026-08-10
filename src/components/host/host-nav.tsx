@@ -16,7 +16,7 @@ export function HostNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Host dashboard" className="flex gap-1 border-b border-line">
+    <nav aria-label="Host dashboard" className="flex flex-wrap gap-1 border-b border-line">
       {LINKS.map((link) => {
         const active = link.href === "/host" ? pathname === "/host" : pathname?.startsWith(link.href);
         return (

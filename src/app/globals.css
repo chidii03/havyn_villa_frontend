@@ -89,7 +89,7 @@
   --border: var(--line);
   --input: var(--line);
   --ring: var(--brand);
-  --radius: 0.875rem; /* 14px — design-tokens.md: default card radius = lg */
+  --radius: 0.875rem;
   --sidebar: #ffffff;
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--brand);
