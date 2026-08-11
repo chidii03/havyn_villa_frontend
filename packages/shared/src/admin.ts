@@ -30,6 +30,34 @@ export interface VerificationRequestSummary {
   createdAt: string;
 }
 
+export interface BookingEmailLogSummary {
+  id: string;
+  bookingId: string;
+  bookingReferenceId: string | null;
+  recipientEmail: string;
+  status: "ATTEMPTED" | "SUCCESSFUL" | "FAILED";
+  failureReason: string | null;
+  retryAttempts: number;
+  createdAt: string;
+}
+
+export interface BookingEmailLogPage {
+  totalAttempted: number;
+  totalSuccessful: number;
+  totalFailed: number;
+  logs: PageResponse<BookingEmailLogSummary>;
+}
+
+export interface SupportTicketSummary {
+  id: string;
+  userId: string;
+  bookingReferenceId: string | null;
+  summary: string;
+  sourceMessage: string;
+  status: "OPEN" | "REVIEWING" | "RESOLVED";
+  createdAt: string;
+}
+
 /** Mirrors admin/web/DisputeSummary.java. */
 export interface DisputeSummary {
   id: string;
