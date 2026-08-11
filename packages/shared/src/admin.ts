@@ -1,8 +1,5 @@
-/**
- * Mirrors apps/api/.../admin/web/*.java — kept in lockstep by hand, see property.ts's own note.
- */
+import type { PageResponse } from "./pagination";
 
-/** Mirrors admin/web/AdminUserSummary.java. */
 export interface AdminUserSummary {
   id: string;
   email: string;
@@ -13,11 +10,6 @@ export interface AdminUserSummary {
   createdAt: string;
 }
 
-// Admin property moderation reuses the existing PropertySummary/PropertyDetail types
-// from property.ts (admin/web/AdminPropertyController.java returns those same DTOs) —
-// no separate admin-specific property type needed.
-
-/** Mirrors admin/web/VerificationRequestSummary.java. */
 export interface VerificationRequestSummary {
   id: string;
   userId: string;
