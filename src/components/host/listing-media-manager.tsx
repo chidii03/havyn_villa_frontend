@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import type { PropertyMediaSummary } from "@havyn/shared";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,21 @@ import {
   updateListingMedia,
 } from "@/lib/api/host";
 import { ApiError } from "@/lib/api/http";
+
+
+type PropertyMediaSummary = {
+  id: string;
+  resourceType: "VIDEO" | "IMAGE" | string;
+  secureUrl: string;
+  posterUrl?: string | null;
+  cardUrl?: string | null;
+  alt?: string | null;
+  format?: string | null;
+  width?: number | null;
+  height?: number | null;
+  duration?: number | null;
+  bytes?: number | null;
+};
 
 export function ListingMediaManager({ accessToken, propertyId }: { accessToken: string; propertyId: string }) {
   const queryClient = useQueryClient();
