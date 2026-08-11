@@ -1,11 +1,4 @@
-/**
- * Mirrors apps/api/.../messaging/web/*.java — kept in lockstep by hand, see
- * property.ts's own note. New this session (prompt 30): the backend has existed
- * since prompt 16/session 17, but no frontend (web or mobile) ever consumed it, so
- * no shared types existed for it yet either.
- */
 
-/** Mirrors messaging/web/ConversationSummary.java. */
 export interface ConversationSummary {
   id: string;
   propertyId: string;

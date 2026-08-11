@@ -1,10 +1,5 @@
 import { z } from "zod";
 
-/**
- * Mirrors the backend's consistent error envelope
- * (apps/api/.../common/error/ErrorResponse.java, project-docs/architecture/03-api-design.md#errors):
- * `{ "error": { "code", "message", "details": [...], "traceId" } }`.
- */
 export const errorDetailSchema = z.object({
   field: z.string(),
   message: z.string(),

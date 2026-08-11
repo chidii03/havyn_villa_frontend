@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-/**
- * Mirrors apps/api/.../auth/web/*Request.java — kept in lockstep by hand since the
- * backend doesn't (yet) publish a machine-readable schema. If a constraint changes on
- * one side, update the other.
- */
+
 export const registerSchema = z.object({
   email: z.string().trim().min(1, "Email is required").email("Enter a valid email address").max(255),
   password: z.string().min(8, "Use at least 8 characters").max(100),

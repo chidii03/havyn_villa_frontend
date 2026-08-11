@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { PropertyMediaSummary} from "@havyn/shared";
 import {
   addListingMedia,
   createMediaSignature,
@@ -17,19 +18,6 @@ import {
 import { ApiError } from "@/lib/api/http";
 
 
-type PropertyMediaSummary = {
-  id: string;
-  resourceType: "VIDEO" | "IMAGE" | string;
-  secureUrl: string;
-  posterUrl?: string | null;
-  cardUrl?: string | null;
-  alt?: string | null;
-  format?: string | null;
-  width?: number | null;
-  height?: number | null;
-  duration?: number | null;
-  bytes?: number | null;
-};
 
 export function ListingMediaManager({ accessToken, propertyId }: { accessToken: string; propertyId: string }) {
   const queryClient = useQueryClient();

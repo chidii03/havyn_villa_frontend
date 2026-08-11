@@ -63,6 +63,46 @@ export interface PropertyDetail {
   photoUrls: string[];
 }
 
+export interface MediaSignatureResponse {
+  cloudName: string;
+  apiKey: string;
+  timestamp: number;
+  signature: string;
+  folder: string;
+}
+
+export interface PropertyMediaSummary {
+  id: string;
+  secureUrl: string;
+  cardUrl: string;
+  heroUrl: string;
+  thumbUrl: string;
+  posterUrl: string | null;
+  resourceType: "IMAGE" | "VIDEO";
+  format: string;
+  width: number | null;
+  height: number | null;
+  duration: number | null;
+  position: number;
+  alt: string | null;
+}
+
+export interface AddMediaRequest {
+  publicId: string;
+  secureUrl: string;
+  resourceType: "IMAGE" | "VIDEO";
+  format: string;
+  width?: number | null;
+  height?: number | null;
+  duration?: number | null;
+  bytes: number;
+  alt?: string | null;
+}
+
+export interface UpdateMediaRequest {
+  alt?: string | null;
+}
+
 /** Mirrors search/web/SearchResultItem.java. */
 export interface SearchResultItem {
   id: string;
