@@ -11,7 +11,6 @@ const LINKS = [
   { href: "/host/earnings", label: "Earnings" },
 ] as const;
 
-/** Shared sub-navigation across every /host/* page — see apps/web/src/app/(protected)/host/layout.tsx. */
 export function HostNav() {
   const pathname = usePathname();
 

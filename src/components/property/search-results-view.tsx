@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { MapView } from "./map-view-lazy";
 import { ResultsGrid } from "./results-grid";
 
-/** list/map toggle + hover-sync client island — the data itself is fetched server-side by /search/page.tsx. */
 export function SearchResultsView({ properties }: { properties: SearchResultItem[] }) {
   const [view, setView] = useState<"list" | "map">("list");
   const [hoveredId, setHoveredId] = useState<string | null>(null);

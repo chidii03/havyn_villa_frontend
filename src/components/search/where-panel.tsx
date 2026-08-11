@@ -3,12 +3,6 @@
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
-/**
- * Static destination list — NOT Google Places Autocomplete. A real Google Maps
- * browser key hasn't been provisioned yet (NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY is
- * empty in .env.example); wiring live typeahead is a follow-up once one exists (see
- * frontend/01-frontend-foundation.md). Lagos-first per the product brief.
- */
 const SUGGESTED_DESTINATIONS = [
   "Lekki, Lagos",
   "Victoria Island, Lagos",
@@ -16,8 +10,7 @@ const SUGGESTED_DESTINATIONS = [
   "Ikeja, Lagos",
   "Abuja",
   "Port Harcourt",
-  "Accra, Ghana",
-  "Nairobi, Kenya",
+  "Enugu"
 ];
 
 export function WherePanel({

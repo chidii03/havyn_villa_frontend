@@ -30,7 +30,6 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   },
 ];
 
-/** frontend/03-ui-and-navigation-spec.md#1.4 — every link real (no href="#"). */
 export function Footer() {
   return (
     <footer className="border-t border-line bg-surface">
