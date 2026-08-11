@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import type { UpdatePropertyRequest } from "@havyn/shared";
 import { ListingMediaManager } from "@/components/host/listing-media-manager";
 import { ErrorState } from "@/components/patterns/error-state";
@@ -56,10 +57,15 @@ export default function EditHostListingPage() {
     mutationFn: () => updateHostListing(accessToken!, id, form),
     onSuccess: () => {
       setServerError(null);
+      toast.success("Property listing updated successfully");
       queryClient.invalidateQueries({ queryKey: ["host", "listing", id] });
       queryClient.invalidateQueries({ queryKey: ["host", "listings"] });
     },
-    onError: (error) => setServerError(error instanceof ApiError ? error.message : "Could not save this listing."),
+    onError: (error) => {
+      const message = error instanceof ApiError ? error.message : "Could not save this listing.";
+      setServerError(message);
+      toast.error(message);
+    },
   });
 
   const deleteMutation = useMutation({

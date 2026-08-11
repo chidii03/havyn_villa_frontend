@@ -122,6 +122,8 @@ function MapboxTripsMap({ accessToken, mappedBookings }: { accessToken: string; 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const appliedStyleRef = useRef(MAPBOX_STREETS);
+  const initialCenterRef = useRef<[number, number] | null>(null);
   const [style, setStyle] = useState(MAPBOX_STREETS);
 
   const center = useMemo<[number, number]>(() => {
@@ -129,18 +131,23 @@ function MapboxTripsMap({ accessToken, mappedBookings }: { accessToken: string; 
     const lat = mappedBookings.reduce((sum, item) => sum + item.position.lat, 0) / mappedBookings.length;
     return [lng, lat];
   }, [mappedBookings]);
+  if (!initialCenterRef.current) {
+    initialCenterRef.current = center;
+  }
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
     mapboxgl.accessToken = accessToken;
+    const mapCenter = initialCenterRef.current ?? center;
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style,
-      center,
+      center: mapCenter,
       zoom: 12,
       attributionControl: true,
     });
+    let removed = false;
 
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
     map.addControl(new mapboxgl.FullscreenControl(), "top-right");
@@ -149,45 +156,71 @@ function MapboxTripsMap({ accessToken, mappedBookings }: { accessToken: string; 
     return () => {
       markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
-      map.remove();
       mapRef.current = null;
+      if (!removed) {
+        removed = true;
+        map.remove();
+      }
     };
-  }, [accessToken, center, style]);
+  }, [accessToken]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) return;
-    map.setStyle(style);
+    if (!map || appliedStyleRef.current === style) return;
+    appliedStyleRef.current = style;
+    try {
+      map.setStyle(style);
+    } catch {
+      // Mapbox can throw if a style switch races with unmount during fast navigation.
+    }
   }, [style]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+    let cancelled = false;
 
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current = [];
+    const syncMarkers = () => {
+      if (cancelled || mapRef.current !== map) return;
 
-    const bounds = new mapboxgl.LngLatBounds();
-    mappedBookings.forEach((item) => {
-      const element = document.createElement("button");
-      element.type = "button";
-      element.className = "flex size-10 items-center justify-center rounded-full border-2 border-white bg-brand text-white shadow-lg";
-      element.innerHTML = `<span class="sr-only">${escapeHtml(item.booking.property.title)}</span>`;
+      markersRef.current.forEach((marker) => marker.remove());
+      markersRef.current = [];
 
-      const marker = new mapboxgl.Marker({ element, anchor: "bottom" })
-        .setLngLat([item.position.lng, item.position.lat])
-        .setPopup(new mapboxgl.Popup({ offset: 18, maxWidth: "280px" }).setHTML(popupHtml(item)))
-        .addTo(map);
+      const bounds = new mapboxgl.LngLatBounds();
+      mappedBookings.forEach((item) => {
+        const element = document.createElement("button");
+        element.type = "button";
+        element.className = "flex size-10 items-center justify-center rounded-full border-2 border-white bg-brand text-white shadow-lg";
+        element.innerHTML = `<span class="sr-only">${escapeHtml(item.booking.property.title)}</span>`;
 
-      markersRef.current.push(marker);
-      bounds.extend([item.position.lng, item.position.lat]);
-    });
+        const marker = new mapboxgl.Marker({ element, anchor: "bottom" })
+          .setLngLat([item.position.lng, item.position.lat])
+          .setPopup(new mapboxgl.Popup({ offset: 18, maxWidth: "280px" }).setHTML(popupHtml(item)))
+          .addTo(map);
 
-    if (mappedBookings.length === 1) {
-      map.flyTo({ center: [mappedBookings[0].position.lng, mappedBookings[0].position.lat], zoom: 13, essential: true });
+        markersRef.current.push(marker);
+        bounds.extend([item.position.lng, item.position.lat]);
+      });
+
+      if (mappedBookings.length === 1) {
+        map.flyTo({ center: [mappedBookings[0].position.lng, mappedBookings[0].position.lat], zoom: 13, essential: true });
+      } else {
+        map.fitBounds(bounds, { padding: 64, maxZoom: 13, duration: 500 });
+      }
+    };
+
+    if (map.loaded()) {
+      syncMarkers();
     } else {
-      map.fitBounds(bounds, { padding: 64, maxZoom: 13, duration: 500 });
+      map.once("load", syncMarkers);
+      map.once("style.load", syncMarkers);
     }
+
+    return () => {
+      cancelled = true;
+      map.off("load", syncMarkers);
+      map.off("style.load", syncMarkers);
+    };
   }, [mappedBookings]);
 
   return (

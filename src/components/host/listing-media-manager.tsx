@@ -72,8 +72,8 @@ export function ListingMediaManager({ accessToken, propertyId }: { accessToken: 
           <h2 className="font-display text-lg font-semibold text-ink">Photos and videos</h2>
           <p className="text-sm text-ink-muted">Upload images or videos. The first item appears on listing cards.</p>
         </div>
-        <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/80">
-          <Icon name="plus" size={16} />
+      <label className="inline-flex min-h-9 cursor-pointer items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/80">
+          <Icon name="plus" size={16} className="mr-1" />
           Upload
           <Input
             type="file"
@@ -95,7 +95,7 @@ export function ListingMediaManager({ accessToken, propertyId }: { accessToken: 
         </p>
       )}
 
-      {uploadMutation.isPending && <p className="text-sm text-ink-muted">Uploading to Cloudinary...</p>}
+      {uploadMutation.isPending && <p className="text-sm text-ink-muted">Uploading Images to dashboard...</p>}
       {mediaQuery.isLoading && <Skeleton className="h-40 w-full" />}
       {mediaQuery.isError && <p className="text-sm text-danger">Could not load listing media. Please try again.</p>}
       {mediaQuery.data && media.length === 0 && (

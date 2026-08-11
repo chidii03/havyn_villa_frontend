@@ -1,7 +1,7 @@
 "use client";
 
 import mapboxgl from "mapbox-gl";
-import  "mapbox-gl/dist/mapbox-gl.css";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EmptyState } from "@/components/patterns/empty-state";
 import { formatPrice } from "@/lib/format/currency";
@@ -78,6 +78,7 @@ function MapboxPropertyMap({
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const markerElementsRef = useRef<Map<string, HTMLButtonElement>>(new Map());
   const appliedStyleRef = useRef(MAPBOX_STREETS);
+  const initialCenterRef = useRef<[number, number] | null>(null);
   const suppressNextMoveRef = useRef(false);
   const [style, setStyle] = useState(MAPBOX_STREETS);
 
@@ -86,18 +87,23 @@ function MapboxPropertyMap({
     const lat = pins.reduce((sum, pin) => sum + pin.lat, 0) / pins.length;
     return [lng, lat];
   }, [pins]);
+  if (!initialCenterRef.current) {
+    initialCenterRef.current = center;
+  }
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
     mapboxgl.accessToken = accessToken;
+    const mapCenter = initialCenterRef.current ?? center;
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style,
-      center,
+      center: mapCenter,
       zoom: 11,
       attributionControl: true,
     });
+    let removed = false;
 
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
     map.addControl(new mapboxgl.FullscreenControl(), "top-right");
@@ -110,15 +116,22 @@ function MapboxPropertyMap({
       if (mapRef.current === map) {
         mapRef.current = null;
       }
-      map.remove();
+      if (!removed) {
+        removed = true;
+        map.remove();
+      }
     };
-  }, [accessToken, center]);
+  }, [accessToken]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || appliedStyleRef.current === style) return;
     appliedStyleRef.current = style;
-    map.setStyle(style);
+    try {
+      map.setStyle(style);
+    } catch {
+      // Mapbox can throw if a style switch races with unmount during fast navigation.
+    }
   }, [style]);
 
   useEffect(() => {
@@ -188,12 +201,18 @@ function MapboxPropertyMap({
     const notifyVisiblePins = onVisiblePinsChange;
 
     function updateVisiblePins() {
+      if (mapRef.current !== currentMap) return;
       if (suppressNextMoveRef.current) {
         suppressNextMoveRef.current = false;
         return;
       }
 
-      const bounds = currentMap.getBounds();
+      let bounds: mapboxgl.LngLatBounds | null;
+      try {
+        bounds = currentMap.getBounds();
+      } catch {
+        return;
+      }
       if (!bounds) return;
       const visibleIds = new Set(
         pins.filter((pin) => bounds.contains([pin.lng, pin.lat])).map((pin) => pin.id),
