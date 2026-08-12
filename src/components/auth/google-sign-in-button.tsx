@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ApiError } from "@/lib/api/http";
 import { useAuth } from "@/lib/auth/auth-provider";
@@ -11,12 +11,7 @@ declare global {
     google?: {
       accounts: {
         id: {
-          initialize: (options: {
-            client_id: string;
-            callback: (response: { credential?: string }) => void;
-            ux_mode?: "popup" | "redirect";
-            redirect_uri?: string;
-          }) => void;
+          initialize: (options: { client_id: string; callback: (response: { credential?: string }) => void }) => void;
           renderButton: (parent: HTMLElement, options: Record<string, string | number | boolean>) => void;
           prompt: () => void;
         };
@@ -35,23 +30,12 @@ export function GoogleSignInButton() {
   const initialized = useRef(false);
   const buttonRef = useRef<HTMLDivElement | null>(null);
 
-  const { isMobileBrowser, isEmbeddedBrowser } = useMemo(() => {
-    const ua = typeof navigator === "undefined" ? "" : navigator.userAgent;
-    const embedded = /(Instagram|FBAN|FBAV|FB_IAB|FB4A|FB5A|Messenger|Line|WhatsApp|Snapchat|Pinterest|TikTok|LinkedIn|Twitter)/i.test(ua)
-      || (/Android/i.test(ua) && /\bwv\b/i.test(ua));
-    const mobile = /\b(Android|iPhone|iPad|iPod)\b/i.test(ua);
-    return { isMobileBrowser: mobile, isEmbeddedBrowser: embedded };
-  }, []);
-
-  const shouldUseRedirect = isMobileBrowser && !isEmbeddedBrowser;
-
   useEffect(() => {
     if (!gsiReady || !GOOGLE_CLIENT_ID || initialized.current || !window.google?.accounts?.id) return;
-    if (isEmbeddedBrowser) return;
 
-    const options = {
+    window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
-      callback: async (response: { credential?: string }) => {
+      callback: async (response) => {
         if (!response.credential) return;
 
         setLoading(true);
@@ -66,11 +50,7 @@ export function GoogleSignInButton() {
           setLoading(false);
         }
       },
-      ux_mode: shouldUseRedirect ? "redirect" : "popup",
-      ...(shouldUseRedirect ? { redirect_uri: `${window.location.origin}${window.location.pathname}` } : {}),
-    } as const;
-
-    window.google.accounts.id.initialize(options);
+    });
     if (buttonRef.current) {
       window.google.accounts.id.renderButton(buttonRef.current, {
         type: "standard",
@@ -83,7 +63,7 @@ export function GoogleSignInButton() {
       });
     }
     initialized.current = true;
-  }, [loginWithGoogle, gsiReady, isEmbeddedBrowser, shouldUseRedirect]);
+  }, [loginWithGoogle, gsiReady]);
 
   const markGsiReady = () => {
     if (window.google?.accounts?.id) {
