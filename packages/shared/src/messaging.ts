@@ -1,4 +1,3 @@
-
 export interface ConversationSummary {
   id: string;
   propertyId: string;

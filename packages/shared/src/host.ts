@@ -1,7 +1,3 @@
-/**
- * Mirrors apps/api/.../hosts/web/*.java — kept in lockstep by hand, see property.ts's own note.
- */
-
 export interface CurrencyAmount {
   currency: string;
   amount: number;

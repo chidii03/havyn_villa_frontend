@@ -29,7 +29,7 @@ export default function WishlistsPage() {
         {wishlistQuery.isLoading && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }, (_, index) => (
-              <Skeleton key={index} className="aspect-[4/3] rounded-xl" />
+              <Skeleton key={index} className="aspect-4/3 rounded-xl" />
             ))}
           </div>
         )}

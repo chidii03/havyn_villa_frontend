@@ -1,8 +1,3 @@
-/**
- * Mirrors apps/api/.../booking/web/*.java — kept in lockstep by hand since the
- * backend doesn't (yet) publish a machine-readable schema.
- */
-
 export const BOOKING_STATUSES = ["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED", "REFUNDED"] as const;
 export type BookingStatusValue = (typeof BOOKING_STATUSES)[number];
 

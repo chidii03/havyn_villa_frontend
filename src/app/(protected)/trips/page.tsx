@@ -17,12 +17,7 @@ import { ApiError } from "@/lib/api/http";
 import { cancelBooking, listBookings } from "@/lib/api/bookings";
 import { formatPrice } from "@/lib/format/currency";
 
-/**
- * frontend/03-ui-and-navigation-spec.md#3. Real `GET /bookings` data — no "upcoming/
- * past" framing, since nothing can be CONFIRMED yet (no payment provider, prompt 13);
- * see BookingWidget's doc comment and frontend/01-frontend-foundation.md's session 6
- * notes. A flat list with honest status labels is what's actually true right now.
- */
+
 export default function TripsPage() {
   const { accessToken } = useAuth();
   const router = useRouter();
