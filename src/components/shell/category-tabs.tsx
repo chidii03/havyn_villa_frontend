@@ -50,9 +50,9 @@ export function CategoryTabs({
         items-end
         overflow-hidden
         px-0
-        pt-4
+        pt-3
         pb-5
-        sm:pt-5
+        sm:pt-4
         sm:pb-6
         md:pt-6
         md:pb-8
@@ -74,41 +74,41 @@ export function CategoryTabs({
                 : "text-[#6A6A6A] hover:text-[#222222]",
             )}
           >
-            {/* Icon */}
+            {/* Category Icon */}
             <span
               className="
-                mb-0.5
+                mb-1
                 flex
-                h-8
-                w-8
+                h-10
+                w-10
                 shrink-0
                 items-center
                 justify-center
-                overflow-hidden
-                sm:h-9
-                sm:w-9
-                md:h-10
-                md:w-10
+                overflow-visible
+                sm:h-11
+                sm:w-11
+                md:h-12
+                md:w-12
               "
             >
               <Image
                 src={icon}
                 alt=""
-                width={36}
-                height={36}
+                width={48}
+                height={48}
                 priority
                 className={cn(
-                  "h-8 w-8 border-0 object-contain outline-none",
+                  "h-10 w-10 object-contain",
+                  "sm:h-11 sm:w-11",
+                  "md:h-12 md:w-12",
                   "transition-transform duration-200",
-                  "sm:h-9 sm:w-9",
-                  "md:h-10 md:w-10",
                   "group-hover:scale-110",
                   !active && "opacity-70 group-hover:opacity-100",
                 )}
               />
             </span>
 
-            {/* Label */}
+            {/* Category Label */}
             <span
               className="
                 mb-1
@@ -126,7 +126,7 @@ export function CategoryTabs({
               {label}
             </span>
 
-            {/* Active indicator */}
+            {/* Active Indicator */}
             {active && (
               <motion.span
                 layoutId={`underline-${variant}`}
