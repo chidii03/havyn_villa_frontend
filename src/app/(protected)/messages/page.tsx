@@ -132,7 +132,7 @@ export default function MessagesPage() {
                 event.currentTarget.form?.requestSubmit();
               }
             }}
-            placeholder="Message Havyn Villa AI Assistant"
+            placeholder="Message Havyn Villa AI"
             rows={1}
             className="max-h-36 min-h-12 resize-none rounded-2xl px-4 py-3 leading-6"
             disabled={sendMutation.isPending}

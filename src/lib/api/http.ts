@@ -1,6 +1,6 @@
 import { apiErrorResponseSchema } from "@havyn/shared";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://havynvillabackend-production.up.railway.app";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://localhost:8080";
 
 export class ApiError extends Error {
   readonly status: number;

@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/properties", label: "Listings" },
+  { href: "/admin/bookings", label: "Bookings" },
   { href: "/admin/emails", label: "Emails" },
   { href: "/admin/support-tickets", label: "Support" },
   { href: "/admin/verification-requests", label: "KYC" },

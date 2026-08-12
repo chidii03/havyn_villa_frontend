@@ -2,6 +2,7 @@ import type {
   AdminAnalyticsSummary,
   AdminUserSummary,
   AuditLogSummary,
+  BookingDetail,
   BookingEmailLogPage,
   DisputeSummary,
   PageResponse,
@@ -105,6 +106,10 @@ export function updateSetting(accessToken: string, key: string, value: string) {
 
 export function getAnalyticsSummary(accessToken: string) {
   return apiFetch<AdminAnalyticsSummary>("/api/v1/admin/analytics/summary", { accessToken });
+}
+
+export function listAdminBookings(accessToken: string, page = 0, size = 20) {
+  return apiFetch<PageResponse<BookingDetail>>(`/api/v1/admin/bookings?page=${page}&size=${size}`, { accessToken });
 }
 
 // --- audit log ---

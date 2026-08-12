@@ -22,16 +22,31 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
+    let frame = 0;
+
     function onScroll() {
-      const nextScrolled = window.scrollY > 24;
-      setScrolled((current) => (current === nextScrolled ? current : nextScrolled));
+      if (frame) {
+        return;
+      }
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const nextScrolled = window.scrollY > 24;
+        setScrolled((current) => (current === nextScrolled ? current : nextScrolled));
+      });
     }
-    onScroll();
+
+    setScrolled(window.scrollY > 24);
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+      }
+    };
   }, []);
 
-  const showExpandedSearch = pathname === "/" && !scrolled;
+  const isHome = pathname === "/";
+  const showExpandedSearch = isHome && !scrolled;
 
   return (
     <header className="sticky top-0 z-1200 border-b border-line bg-surface/90 backdrop-blur">
@@ -40,19 +55,33 @@ export function Header() {
           <Logo />
         </Link>
 
-        {showExpandedSearch && (
-          <div className="hidden lg:block">
+        {isHome && (
+          <div
+            aria-hidden={!showExpandedSearch}
+            className={[
+              "hidden origin-center lg:block",
+              "transition-[opacity,transform,width] duration-200 ease-out",
+              showExpandedSearch ? "w-auto scale-100 opacity-100" : "w-0 scale-95 overflow-hidden opacity-0",
+            ].join(" ")}
+          >
             <CategoryTabs />
           </div>
         )}
 
-        {!showExpandedSearch && (
-          <div className="hidden min-w-0 flex-1 justify-center md:flex">
-            <div className="w-full max-w-lg">
-              <SearchBar variant="compact" />
-            </div>
+        <div
+          aria-hidden={showExpandedSearch}
+          className={[
+            "hidden min-w-0 justify-center overflow-hidden md:flex",
+            "transition-[opacity,transform,flex-basis] duration-200 ease-out",
+            showExpandedSearch
+              ? "pointer-events-none basis-0 flex-none -translate-y-1 opacity-0"
+              : "basis-auto flex-1 translate-y-0 opacity-100",
+          ].join(" ")}
+        >
+          <div className="w-full max-w-lg">
+            <SearchBar variant="compact" />
           </div>
-        )}
+        </div>
 
         <div className="flex shrink-0 items-center gap-2">
           <Link
@@ -82,16 +111,30 @@ export function Header() {
         </div>
       </div>
 
-      {showExpandedSearch && (
-        <div className="mx-auto hidden max-w-6xl justify-center px-4 pb-5 md:flex">
+      {isHome && (
+        <div
+          aria-hidden={!showExpandedSearch}
+          className={[
+            "mx-auto hidden max-w-6xl justify-center overflow-hidden px-4 md:flex",
+            "transition-[max-height,opacity,transform,padding-bottom] duration-200 ease-out",
+            showExpandedSearch ? "max-h-24 translate-y-0 pb-5 opacity-100" : "pointer-events-none max-h-0 -translate-y-2 pb-0 opacity-0",
+          ].join(" ")}
+        >
           <div className="w-full max-w-3xl">
             <SearchBar variant="expanded" />
           </div>
         </div>
       )}
 
-      {showExpandedSearch && (
-        <div className="border-t border-line lg:hidden">
+      {isHome && (
+        <div
+          aria-hidden={!showExpandedSearch}
+          className={[
+            "overflow-hidden border-t border-line lg:hidden",
+            "transition-[max-height,opacity,transform] duration-200 ease-out",
+            showExpandedSearch ? "max-h-32 translate-y-0 opacity-100" : "pointer-events-none max-h-0 -translate-y-2 opacity-0",
+          ].join(" ")}
+        >
           <div className="mx-auto flex max-w-6xl justify-center px-2">
             <CategoryTabs variant="mobile" />
           </div>
