@@ -69,7 +69,9 @@ export function CategoryTabs({
               "group relative flex min-w-0 w-full flex-col items-center justify-end",
               "px-0 py-1",
               "transition-colors duration-200",
-              active ? "text-[#222222]" : "text-[#6A6A6A] hover:text-[#222222]",
+              active
+                ? "text-[#222222]"
+                : "text-[#6A6A6A] hover:text-[#222222]",
             )}
           >
             {/* Category Icon */}
@@ -138,17 +140,17 @@ export function CategoryTabs({
                       }
                 }
                 className="
-                         absolute
-                        -bottom-1.5
-                          left-1/2
-                            h-0.5
-                             w-6
-                       -translate-x-1/2
-                          rounded-full
-                         bg-[#222222]
-                             sm:w-7
-                             md:w-8
-                                "
+                  absolute
+                  bottom-0
+                  left-1/2
+                  h-0.5
+                  w-[calc(100%-8px)]
+                  -translate-x-1/2
+                  rounded-full
+                  bg-[#222222]
+                  sm:w-[calc(100%-12px)]
+                  md:w-[calc(100%-16px)]
+                "
               />
             )}
           </Link>
